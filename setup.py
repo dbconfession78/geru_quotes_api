@@ -4,6 +4,7 @@ requires = ['pyramid',
             'pyramid_chameleon',
             'pyramid_jinja2',
             'waitress',
+            'sqlalchemy',
 ]
 
 setup(name='app',
