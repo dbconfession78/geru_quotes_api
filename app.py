@@ -30,7 +30,7 @@ class QueryManager:
         :request: http request made for page.
         :Return: instace of the 'Response' class
         """
-        # TODO:make sure 'id' is not in the sessions string
+        # TODO:make sure 'id' is not in dct already string
         request.session['id'] = str(uuid4)
         return {"content": "Web Challenge 1.0"}
 
