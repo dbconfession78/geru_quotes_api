@@ -2,54 +2,70 @@
 Module: app - uses 'QueryManager' object to execute application and make
               queries to the "quotes" api.
 """
+from datetime import datetime
+from models.page_request import PageRequest
 from pyramid.config import Configurator
-from pyramid.httpexceptions import HTTPFound
-from pyramid.response import Response
 from pyramid.session import SignedCookieSessionFactory
-from pyramid.view import view_config
-
 from quotes import API
-from random import sample
+from models import storage
 from uuid import uuid4
-from waitress import serve
 from wsgiref.simple_server import make_server
-
-sf = SignedCookieSessionFactory("Ican'ttellyoumysecretnowcanI?")
 
 
 class QueryManager:
+    """
+    QueryManager - handles api requests, session cookies and page rendering
+    """
     def __init__(self):
-        """
-        __init__ - initializer for the QueryManager class
-        """
         self.api = API()
+        self.session_factory = SignedCookieSessionFactory(
+            "Ican'ttellyoumysecretnowcanI?")
 
     def render_title_page(self, request):
         """
         render_title_page - renders empty page with title of project
-        :request: http request made for page.
-        :Return: instace of the 'Response' class
+        :param request: http request made for page.
+        :return: instace of the 'Response' class
         """
-        # TODO:make sure 'id' is not in dct already string
-        request.session['id'] = str(uuid4)
+        self.handle_session(request)
         return {"content": "Web Challenge 1.0"}
 
-    @view_config(route_name="get_quote")
     def query_api(self, request):
         """
         query_api - fetches specific quote from API().quotes
-        :request: incoming http request headers, including desired quote number
-        Return: string cast dictionary object containing requested quote(s)
+        :param request: incoming http request headers, including desired quote
+                        number
+        :return: string cast dictionary object containing requested quote(s)
         """
         def query_quote_by_id(n):
             return self.api.get_quote(n)
 
+        self.handle_session(request)
         n = request.matchdict.get('quote_num')
         if n:
             quotes = query_quote_by_id(n)
         else:
             quotes = self.api.get_quotes()
         return {"dct": quotes, "n": self.api.n}
+
+    def handle_session(self, request):
+        """
+        handle_session - stores session info in db
+        :param request: session request
+        :return: None
+        """
+        if 'id' not in request.session:
+            request.session['id'] = str(uuid4())
+            print("new session ID created.")
+        else:
+            print("this session ID exists.")
+
+        req_url = request.path_url
+        new_request = PageRequest(session_id=request.session['id'],
+                                  datetime=datetime.now(),
+                                  request=req_url)
+        storage.new(new_request)
+        storage.save()
 
 
 def main():
@@ -59,8 +75,7 @@ def main():
     q_manager = QueryManager()
     with Configurator() as config:
         config.include("pyramid_jinja2")
-        input(sf)
-        config.set_session_factory(sf)
+        config.set_session_factory(q_manager.session_factory)
 
         config.add_route('title', '/')
         config.add_route('get_quotes', '/quotes')
