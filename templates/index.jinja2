@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+	<script src="../static/scripts/quotes.js"></script>
+    <title>Web Challenge 1.0</title>
+	<div class="list_wrapper">
+	  <ul>
+		{% if "quote" in dct %}
+	       ({{ n }}) {{ dct["quote"] }}
+		{% endif %}
+
+		{% if "quotes" in dct %}
+	       {% for elem in dct["quotes"] %}
+	       <li> {{ elem }} </li>
+	       {% endfor %}
+		{% endif %}
+	  </ul>
+	</div>
+  </head>
+  <body>
+  </body>
+</html>
