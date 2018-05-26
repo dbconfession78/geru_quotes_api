@@ -59,6 +59,7 @@ def main():
     q_manager = QueryManager()
     with Configurator() as config:
         config.include("pyramid_jinja2")
+        input(sf)
         config.set_session_factory(sf)
 
         config.add_route('title', '/')
