@@ -82,14 +82,17 @@ def main():
         config.add_route('get_quote', '/quotes/{quote_num}')
         config.add_route('get_random_quote', '/quotes/random')
 
+        # First view, available at http://localhost:6543/
         config.add_view(q_manager.render_title_page,
                         route_name='title',
                         renderer="./templates/index.jinja2")
 
+        # /quotes
         config.add_view(q_manager.query_api,
                         route_name='get_quotes',
                         renderer="./templates/index.jinja2")
 
+        # /quotes/<quote number>
         config.add_view(q_manager.query_api,
                         route_name='get_quote',
                         renderer="./templates/index.jinja2")
